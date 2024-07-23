@@ -3,8 +3,7 @@ const connectDB = require('./config/db');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const cors = require('cors');
-const passport = require('passport');
-require('./config/passport');
+const passport = require('./config/passport');
 const dotenv = require('dotenv');
 const app = express();
 
