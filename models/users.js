@@ -9,7 +9,8 @@ const userSchema = new Schema({
     },
     password: {
         type: String,
-        required: true
+        required: true,
+        select: false
     },
     email: {
         type: String,
@@ -17,6 +18,14 @@ const userSchema = new Schema({
     }
 });
 
+
+// Never serialize password hashes even when explicitly selected.
+userSchema.set('toJSON', {
+    transform(_doc, result) {
+        delete result.password;
+        return result;
+    }
+});
 
 // Hash the password before saving the user model
 userSchema.pre('save', async function (next) {
