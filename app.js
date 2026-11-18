@@ -7,6 +7,8 @@ const passport = require('./config/passport');
 const dotenv = require('dotenv');
 const app = express();
 
+dotenv.config();
+
 const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret || sessionSecret.length < 32) {
     throw new Error('SESSION_SECRET must be configured with at least 32 characters');
@@ -22,8 +24,6 @@ const corsOptions = {
     credentials: true,
 };
 if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
-
-dotenv.config();
 
 app
     .use(bodyParser.json())
