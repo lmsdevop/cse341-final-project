@@ -1,17 +1,10 @@
-const dotenv = require('dotenv');
-
-dotenv.config();
-
 const isAuthenticated = (req, res, next) => {
-    if (req.session.user === undefined && process.env.NODE_ENV != 'test') {
-        return res.status(401).json(
-            {
-                message: "You do not have access. Please Log in with an authorized account."
-            })
+    if (!req.session || !req.session.user) {
+        return res.status(401).json({
+            message: 'Authentication required.'
+        });
     }
     next();
 };
 
-module.exports = {
-    isAuthenticated
-}
+module.exports = { isAuthenticated };
