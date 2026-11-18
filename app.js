@@ -7,31 +7,39 @@ const passport = require('./config/passport');
 const dotenv = require('dotenv');
 const app = express();
 
+const sessionSecret = process.env.SESSION_SECRET;
+if (!sessionSecret || sessionSecret.length < 32) {
+    throw new Error('SESSION_SECRET must be configured with at least 32 characters');
+}
+
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+    .split(',').map(origin => origin.trim()).filter(Boolean);
+const corsOptions = {
+    origin(origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+        return callback(new Error('Origin not allowed by CORS'));
+    },
+    credentials: true,
+};
+if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
+
 dotenv.config();
 
 app
     .use(bodyParser.json())
+    .use(cors(corsOptions))
     .use(session({
-        secret: "secret",
+        secret: sessionSecret,
         resave: false,
-        saveUninitialized: true,
+        saveUninitialized: false,
+        cookie: {
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+        },
     }))
     .use(passport.initialize())
-    .use(passport.session())
-    .use((req, res, next) => {
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader(
-            'Access-Control-Allow-Headers',
-            'Origin, X-Requested-With, Content-Type, Accept, Z-key'
-        );
-        res.setHeader(
-            'Access-Control-Allow-Methods',
-            'GET, POST, PUT, DELETE, OPTIONS'
-        );
-        next();
-    })
-    .use(cors({ methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH'] }))
-    .use(cors({ origin: '*' }))
+    .use(passport.session());
 
 // Middleware
 app.use(express.json());
